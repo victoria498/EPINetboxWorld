@@ -113,8 +113,8 @@
   .result-doc  { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
   .result-meta { font-size: 0.8rem; color: #6b7280; }
   .result-badge {
-    font-size: 0.78rem; font-weight: 700;
-    padding: 4px 12px; border-radius: 20px; text-align: center; white-space: nowrap;
+    font-size: 0.75rem; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px; text-align: center;
   }
   .badge-ok      { background: #d1fae5; color: #065f46; }
   .badge-no      { background: #fee2e2; color: #991b1b; }
@@ -261,10 +261,10 @@ async function runConsultas() {
         setRowState(row, 'err', '⚠ Error del servicio');
       } else if (data.tieneCupo === 'S') {
         cntOk++;
-        setRowState(row, 'ok', '✓ Tiene cupo');
+        setRowState(row, 'ok', '✓ Tiene cupo · Máx. 3 envíos anuales · Tope total USD 800');
       } else if (data.tieneCupo === 'N') {
         cntNo++;
-        setRowState(row, 'no', '✗ Sin cupo');
+        setRowState(row, 'no', '✗ Sin cupo disponible');
       } else {
         cntErr++;
         setRowState(row, 'err', '? Inesperado');
