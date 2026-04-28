@@ -48,6 +48,8 @@
     transition: border-color 0.15s; outline: none;
   }
   input:focus { border-color: #1a3a5c; background: #fff; }
+  input[readonly] { background: #f3f4f6; color: #6b7280; cursor: default; }
+  input[readonly]:focus { border-color: #e5e7eb; background: #f3f4f6; }
   .client-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
   .col-labels {
     display: grid; grid-template-columns: 1fr 1.4fr 36px; gap: 8px; padding: 0 0 4px;
@@ -151,8 +153,8 @@
     <div class="card-title">Parámetros de consulta</div>
     <div class="params-grid">
       <div>
-        <label for="anio">Año</label>
-        <input type="number" id="anio" value="2026" min="2020" max="2099">
+        <label>Año</label>
+        <input type="text" id="anio" value="2026" readonly>
       </div>
       <div>
         <label for="monto">Monto a verificar (USD)</label>
