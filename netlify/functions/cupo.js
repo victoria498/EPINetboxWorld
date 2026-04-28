@@ -57,6 +57,10 @@ exports.handler = async (event) => {
 function soapRequest(soap) {
   return new Promise((resolve, reject) => {
     const url = new URL(ADUANA_ENDPOINT);
+    const usuario = process.env.ADUANA_USUARIO;
+    const password = process.env.ADUANA_PASSWORD;
+    const credenciales = Buffer.from(`${usuario}:${password}`).toString('base64');
+
     const options = {
       hostname: url.hostname,
       path: url.pathname,
@@ -65,6 +69,7 @@ function soapRequest(soap) {
         'Content-Type': 'text/xml; charset=utf-8',
         'SOAPAction': SOAP_ACTION,
         'Content-Length': Buffer.byteLength(soap),
+        'Authorization': `Basic ${credenciales}`,
       },
     };
 
