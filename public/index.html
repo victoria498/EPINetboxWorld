@@ -127,6 +127,14 @@
     vertical-align: middle; margin-right: 4px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .legal {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 0.78rem;
+    color: #9ca3af;
+  }
   @media (max-width: 500px) {
     .params-grid { grid-template-columns: 1fr; }
     .client-row { grid-template-columns: 1fr 36px; }
@@ -185,6 +193,9 @@
       <span>Estado</span>
     </div>
     <div id="resultsList"></div>
+  </div>
+  <div class="legal">
+    * Información basada en datos registrados por la Dirección Nacional de Aduanas en Uruguay.
   </div>
 </div>
 <script>
@@ -261,7 +272,7 @@ async function runConsultas() {
         setRowState(row, 'err', '⚠ Error del servicio');
       } else if (data.tieneCupo === 'S') {
         cntOk++;
-        setRowState(row, 'ok', '✓ Tiene cupo · Máx. 3 envíos anuales · Tope total USD 800');
+        setRowState(row, 'ok', '🎉 ¡Felicitaciones! Contás con saldo disponible para el monto ingresado.');
       } else if (data.tieneCupo === 'N') {
         cntNo++;
         setRowState(row, 'no', '✗ Sin cupo disponible');
