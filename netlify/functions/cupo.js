@@ -1,87 +1,299 @@
-const https = require('https');
-
-const ADUANA_ENDPOINT = 'https://servicios.aduanas.gub.uy/LuciaWS/awscupoepi.aspx';
-const SOAP_ACTION = 'www.aduanas.gub.uy/WSCupoEPIaction/AWSCUPOEPI.Execute';
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Content-Type': 'application/json',
-};
-
-exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta Cupo EPI — Netbox World</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+    padding: 2rem 1rem;
   }
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
+  .container { max-width: 860px; margin: 0 auto; }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
-  let body;
-  try {
-    body = JSON.parse(event.body);
-  } catch {
-    return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Body inválido' }) };
+  .header-left { display: flex; align-items: center; gap: 1rem; }
+  .header-left img { height: 64px; width: auto; }
+  .header-left h1 { font-size: 1.5rem; font-weight: 700; color: #1a3a5c; letter-spacing: -0.5px; }
+  .header-left p { font-size: 0.82rem; color: #6b7280; margin-top: 2px; }
+  .header-badge {
+    background: #1a3a5c; color: #fff;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px; white-space: nowrap;
   }
-  const { documento, anio, monto } = body;
-  if (!documento || !anio || monto === undefined) {
-    return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Faltan campos: documento, anio, monto' }) };
+  .card {
+    background: #fff; border-radius: 12px;
+    padding: 1.5rem; margin-bottom: 1.25rem; border: 1px solid #e5e7eb;
   }
-  const soap = `<?xml version="1.0" encoding="utf-8"?>
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:wsc="www.aduanas.gub.uy/WSCupoEPI">
-  <soapenv:Header/>
-  <soapenv:Body>
-    <wsc:WSCupoEPI.Execute>
-      <wsc:Documento>${documento}</wsc:Documento>
-      <wsc:Anio>${anio}</wsc:Anio>
-      <wsc:Montodolaresepi>${monto}</wsc:Montodolaresepi>
-    </wsc:WSCupoEPI.Execute>
-  </soapenv:Body>
-</soapenv:Envelope>`;
-  try {
-    const xmlResponse = await soapRequest(soap);
-    console.log('Respuesta Aduana:', xmlResponse);
-    const tieneCupo = extractTag(xmlResponse, 'Tienecupo');
-    const error     = extractTag(xmlResponse, 'Error');
-    const errores   = extractTag(xmlResponse, 'Errores');
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ tieneCupo, error, errores }) };
-  } catch (err) {
-    console.log('Error:', err.message);
-    return { statusCode: 502, headers: CORS_HEADERS, body: JSON.stringify({ error: 'No se pudo conectar con Aduana', detalle: err.message }) };
+  .card-title {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #9ca3af; margin-bottom: 1rem;
   }
-};
-
-function soapRequest(soap) {
-  return new Promise((resolve, reject) => {
-    const url = new URL(ADUANA_ENDPOINT);
-    const usuario = process.env.ADUANA_USUARIO;
-    const password = process.env.ADUANA_PASSWORD;
-    const credenciales = Buffer.from(`${usuario}:${password}`).toString('base64');
-    const options = {
-      hostname: url.hostname,
-      path: url.pathname,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/xml; charset=utf-8',
-        'SOAPAction': SOAP_ACTION,
-        'Content-Length': Buffer.byteLength(soap),
-        'Authorization': `Basic ${credenciales}`,
-      },
-    };
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve(data));
-    });
-    req.on('error', reject);
-    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Timeout')); });
-    req.write(soap);
-    req.end();
+  .params-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 4px; }
+  input[type="number"], input[type="text"] {
+    width: 100%; padding: 9px 12px;
+    border: 1.5px solid #e5e7eb; border-radius: 8px;
+    font-size: 0.95rem; color: #1a1a2e; background: #f9fafb;
+    transition: border-color 0.15s; outline: none;
+  }
+  input:focus { border-color: #1a3a5c; background: #fff; }
+  input[readonly] { background: #f3f4f6; color: #6b7280; cursor: default; }
+  input[readonly]:focus { border-color: #e5e7eb; background: #f3f4f6; }
+  .client-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+  .col-labels {
+    display: grid; grid-template-columns: 1fr 1.4fr 36px; gap: 8px; padding: 0 0 4px;
+  }
+  .col-labels span {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: #9ca3af;
+  }
+  .client-row { display: grid; grid-template-columns: 1fr 1.4fr 36px; gap: 8px; align-items: center; }
+  .btn-remove {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1.5px solid #fee2e2; background: #fef2f2; color: #ef4444;
+    font-size: 1.2rem; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: background 0.15s; flex-shrink: 0;
+  }
+  .btn-remove:hover { background: #fee2e2; }
+  .btn-add {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 8px; border: 1.5px dashed #d1d5db;
+    background: transparent; color: #6b7280; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-add:hover { border-color: #1a3a5c; color: #1a3a5c; background: #f0f4f8; }
+  .btn-consultar {
+    width: 100%; padding: 12px; border-radius: 10px; border: none;
+    background: #1a3a5c; color: #fff; font-size: 1rem; font-weight: 600;
+    cursor: pointer; letter-spacing: 0.5px; transition: background 0.15s, transform 0.1s;
+    margin-top: 1rem;
+  }
+  .btn-consultar:hover { background: #14304e; }
+  .btn-consultar:active { transform: scale(0.99); }
+  .btn-consultar:disabled { background: #9ca3af; cursor: not-allowed; }
+  .results-section { display: none; }
+  .results-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;
+  }
+  .results-header h2 {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: #9ca3af;
+  }
+  .summary-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill { font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .pill-ok { background: #d1fae5; color: #065f46; }
+  .pill-no { background: #fee2e2; color: #991b1b; }
+  .pill-err { background: #fef3c7; color: #92400e; }
+  .col-header {
+    display: grid; grid-template-columns: 2fr 1.5fr auto;
+    padding: 0 16px 6px; gap: 12px;
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af;
+  }
+  .result-row {
+    display: grid; grid-template-columns: 2fr 1.5fr auto;
+    align-items: center; padding: 14px 16px;
+    border-radius: 10px; margin-bottom: 8px;
+    border: 1px solid #e5e7eb; background: #fff; gap: 12px;
+  }
+  .result-row.ok  { border-left: 4px solid #10b981; }
+  .result-row.no  { border-left: 4px solid #ef4444; }
+  .result-row.err { border-left: 4px solid #f59e0b; }
+  .result-row.loading { border-left: 4px solid #d1d5db; }
+  .result-name { font-weight: 600; font-size: 0.95rem; color: #1a1a2e; }
+  .result-doc  { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+  .result-meta { font-size: 0.8rem; color: #6b7280; }
+  .result-badge {
+    font-size: 0.75rem; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px; text-align: center;
+  }
+  .badge-ok      { background: #d1fae5; color: #065f46; }
+  .badge-no      { background: #fee2e2; color: #991b1b; }
+  .badge-err     { background: #fef3c7; color: #92400e; }
+  .badge-loading { background: #f3f4f6; color: #6b7280; }
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid #d1d5db; border-top-color: #1a3a5c;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 4px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .legal {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 0.78rem;
+    color: #9ca3af;
+  }
+  @media (max-width: 500px) {
+    .params-grid { grid-template-columns: 1fr; }
+    .client-row { grid-template-columns: 1fr 36px; }
+    .col-labels { grid-template-columns: 1fr 36px; }
+    .col-labels span:nth-child(2) { display: none; }
+    .header-left img { height: 48px; }
+    .header-left h1 { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-left">
+      <img src="logos_Netbox_color.png" alt="Netbox World">
+      <div>
+        <h1>Consulta Cupo EPI</h1>
+        <p>Control de franquicias — WSCupoEPI · DNA Aduana Uruguay</p>
+      </div>
+    </div>
+    <div class="header-badge">Decreto 050/026</div>
+  </header>
+  <div class="card">
+    <div class="card-title">Parámetros de consulta</div>
+    <div class="params-grid">
+      <div>
+        <label>Año</label>
+        <input type="text" id="anio" value="2026" readonly>
+      </div>
+      <div>
+        <label for="monto">Monto a verificar (USD)</label>
+        <input type="number" id="monto" value="100" min="1" max="800" step="1" placeholder="ej: 150">
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Clientes a consultar</div>
+    <div class="client-list" id="clientList">
+      <div class="col-labels">
+        <span>Documento</span>
+        <span>Nombre (opcional)</span>
+        <span></span>
+      </div>
+    </div>
+    <button class="btn-add" onclick="addClient()">+ Agregar cliente</button>
+    <button class="btn-consultar" id="btnConsultar" onclick="runConsultas()">Consultar cupos</button>
+  </div>
+  <div class="results-section" id="resultsSection">
+    <div class="results-header">
+      <h2>Resultados</h2>
+      <div class="summary-pills" id="summaryPills"></div>
+    </div>
+    <div class="col-header">
+      <span>Cliente</span>
+      <span>Monto / Año</span>
+      <span>Estado</span>
+    </div>
+    <div id="resultsList"></div>
+  </div>
+  <div class="legal">
+    * Información basada en datos registrados por la Dirección Nacional de Aduanas en Uruguay.
+  </div>
+</div>
+<script>
+let clientCount = 0;
+function addClient(doc = '', nombre = '') {
+  clientCount++;
+  const id = clientCount;
+  const list = document.getElementById('clientList');
+  const row = document.createElement('div');
+  row.className = 'client-row';
+  row.id = 'client-' + id;
+  row.innerHTML = `
+    <input type="text" placeholder="ej: 12345678" value="${doc}" id="doc-${id}" maxlength="12">
+    <input type="text" placeholder="Nombre del cliente" value="${nombre}" id="nombre-${id}">
+    <button class="btn-remove" onclick="removeClient(${id})">×</button>
+  `;
+  list.appendChild(row);
+}
+function removeClient(id) {
+  const el = document.getElementById('client-' + id);
+  if (el) el.remove();
+}
+function getClients() {
+  return [...document.querySelectorAll('.client-row[id^="client-"]')]
+    .map(row => {
+      const id = row.id.replace('client-', '');
+      const doc    = document.getElementById('doc-' + id)?.value.trim();
+      const nombre = document.getElementById('nombre-' + id)?.value.trim() || doc;
+      return doc ? { doc, nombre } : null;
+    }).filter(Boolean);
+}
+function setRowState(el, state, text) {
+  el.className = 'result-row ' + state;
+  const badge = el.querySelector('.result-badge');
+  badge.className = 'result-badge badge-' + state;
+  badge.innerHTML = text;
+}
+async function runConsultas() {
+  const clients = getClients();
+  if (!clients.length) { alert('Agregá al menos un cliente con su documento.'); return; }
+  const anio  = document.getElementById('anio').value;
+  const monto = document.getElementById('monto').value;
+  const btn = document.getElementById('btnConsultar');
+  btn.disabled = true;
+  btn.textContent = 'Consultando...';
+  document.getElementById('resultsSection').style.display = 'block';
+  const list = document.getElementById('resultsList');
+  list.innerHTML = '';
+  const rows = clients.map(c => {
+    const row = document.createElement('div');
+    row.className = 'result-row loading';
+    row.innerHTML = `
+      <div>
+        <div class="result-name">${c.nombre}</div>
+        <div class="result-doc">Doc: ${c.doc}</div>
+      </div>
+      <div class="result-meta">USD ${parseFloat(monto).toLocaleString('es-UY')} · ${anio}</div>
+      <div class="result-badge badge-loading"><span class="spinner"></span>Consultando</div>
+    `;
+    list.appendChild(row);
+    return { row, client: c };
   });
+  let cntOk = 0, cntNo = 0, cntErr = 0;
+  for (const { row, client } of rows) {
+    try {
+      const resp = await fetch('/api/cupo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documento: client.doc, anio: parseInt(anio), monto: parseFloat(monto) })
+      });
+      const data = await resp.json();
+      if (data.error === 'S' || resp.status >= 400) {
+        cntErr++;
+        setRowState(row, 'err', '⚠ Error del servicio');
+      } else if (data.tieneCupo === 'S') {
+        cntOk++;
+        setRowState(row, 'ok', '🎉 ¡Felicitaciones! Contás con saldo disponible para el monto ingresado.');
+      } else if (data.tieneCupo === 'N') {
+        cntNo++;
+        setRowState(row, 'no', '✗ Sin cupo disponible');
+      } else {
+        cntErr++;
+        setRowState(row, 'err', '? Inesperado');
+      }
+    } catch {
+      cntErr++;
+      setRowState(row, 'err', '⚠ Error de red');
+    }
+  }
+  const pills = document.getElementById('summaryPills');
+  pills.innerHTML = '';
+  if (cntOk)  pills.innerHTML += `<span class="pill pill-ok">${cntOk} con cupo</span>`;
+  if (cntNo)  pills.innerHTML += `<span class="pill pill-no">${cntNo} sin cupo</span>`;
+  if (cntErr) pills.innerHTML += `<span class="pill pill-err">${cntErr} con error</span>`;
+  btn.disabled = false;
+  btn.textContent = 'Volver a consultar';
 }
-
-function extractTag(xml, tag) {
-  const match = xml.match(new RegExp(`<${tag}[^>]*>(.*?)<\\/${tag}>`, 's'));
-  return match ? match[1].trim() : null;
-}
+addClient('', '');
+</script>
+</body>
+</html>
