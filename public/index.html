@@ -85,7 +85,7 @@
   <div class="page-header">
     <div class="page-tag">Decreto 050/026</div>
     <h1 class="page-title">Consulta de <span>Cupo EPI</span></h1>
-    <p class="page-sub">Verificá si tu cliente tiene saldo disponible en la franquicia de envíos internacionales 2026, directamente desde el sistema de la Dirección Nacional de Aduanas.</p>
+    <p class="page-sub">Verificá si te queda saldo disponible en la franquicia de envíos internacionales 2026, directamente desde el sistema de la Dirección Nacional de Aduanas.</p>
   </div>
 
   <div class="card">
@@ -176,11 +176,11 @@ async function consultar() {
     } else if (data.tieneCupo === 'S') {
       card.classList.add('ok');
       eyebrow.textContent = '✓ Cupo disponible';
-      text.textContent = '¡Felicitaciones! El cliente cuenta con saldo disponible para el monto ingresado.';
+      text.textContent = '¡Felicitaciones! Contás con saldo disponible para el monto ingresado.';
     } else if (data.tieneCupo === 'N') {
       card.classList.add('no');
       eyebrow.textContent = '✗ Sin cupo disponible';
-      text.textContent = 'El cliente no cuenta con cupo suficiente para el monto ingresado en el año 2026.';
+      text.textContent = 'No contás con cupo suficiente para el monto ingresado en el año 2026. De igual forma podés optar por envío bajo régimen simplificado y comprar en el mundo las veces que quieras, abonando el 60% del monto de la factura.';
     } else {
       card.classList.add('err');
       eyebrow.textContent = 'Respuesta inesperada';
