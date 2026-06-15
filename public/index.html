@@ -49,9 +49,12 @@
   .result-card.ok .result-eyebrow{color:#16A34A}
   .result-card.no .result-eyebrow{color:#DC2626}
   .result-card.err .result-eyebrow{color:#D97706}
-  .result-text{font-size:17px;font-weight:700;color:#0F172A;line-height:1.4;margin-bottom:10px}
+  .result-title{font-size:17px;font-weight:800;color:#0F172A;line-height:1.4;margin-bottom:6px}
+  .result-sub{font-size:14px;font-weight:400;color:#475569;line-height:1.6;margin-bottom:10px}
   .result-meta{font-size:13px;color:#64748B;padding-top:10px;border-top:1px solid rgba(0,0,0,.06);display:flex;gap:16px;flex-wrap:wrap}
   .result-meta-item{display:flex;align-items:center;gap:5px}
+  .btn-soporte{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:10px 18px;border-radius:10px;background:#0F172A;color:#fff;font-size:13px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:.15s}
+  .btn-soporte:hover{background:#1A3C8F}
   .info-box{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:16px 20px;display:flex;gap:12px;align-items:flex-start}
   .info-icon{flex-shrink:0;margin-top:1px}
   .info-text{font-size:13px;color:#1E40AF;line-height:1.6}
@@ -117,7 +120,9 @@
 
   <div class="result-card" id="resultCard">
     <div class="result-eyebrow" id="resultEyebrow"></div>
-    <div class="result-text" id="resultText"></div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-sub" id="resultSub"></div>
+    <div id="resultBtn"></div>
     <div class="result-meta" id="resultMeta"></div>
   </div>
 
@@ -162,35 +167,49 @@ async function consultar() {
     const data = await resp.json();
     card.style.display = 'block';
     const eyebrow = document.getElementById('resultEyebrow');
-    const text    = document.getElementById('resultText');
+    const title   = document.getElementById('resultTitle');
+    const sub     = document.getElementById('resultSub');
+    const btnEl   = document.getElementById('resultBtn');
     const meta    = document.getElementById('resultMeta');
     meta.innerHTML = `
       <span class="result-meta-item">📅 2026</span>
       <span class="result-meta-item">💵 USD ${parseFloat(monto).toLocaleString('es-UY')}</span>
       <span class="result-meta-item">🪪 CI: ${cedula}</span>
     `;
+    btnEl.innerHTML = '';
     if (data.error === 'S' || resp.status >= 400) {
       card.classList.add('err');
       eyebrow.textContent = 'Error del servicio';
-      text.textContent = 'No se pudo obtener la información. Intentá nuevamente en unos momentos.';
+      title.textContent = 'No se pudo obtener la información.';
+      sub.textContent = 'Intentá nuevamente en unos momentos.';
     } else if (data.tieneCupo === 'S') {
       card.classList.add('ok');
       eyebrow.textContent = '✓ Cupo disponible';
-      text.textContent = '¡Felicitaciones! Contás con saldo disponible para el monto ingresado.';
+      title.textContent = '¡Felicitaciones! Contás con saldo disponible para el monto ingresado.';
+      sub.textContent = '';
     } else if (data.tieneCupo === 'N') {
       card.classList.add('no');
       eyebrow.textContent = '✗ Sin cupo disponible';
-      text.textContent = 'No contás con cupo suficiente para el monto ingresado en el año 2026. De igual forma podés optar por envío bajo régimen simplificado y comprar en el mundo las veces que quieras, abonando el 60% del monto de la factura.';
+      title.textContent = 'No contás con cupo suficiente para el monto ingresado en el año 2026.';
+      sub.textContent = 'De igual forma podés optar por envío bajo régimen simplificado y comprar en el mundo las veces que quieras, abonando el 60% del monto de la factura.';
+      btnEl.innerHTML = `
+        <a class="btn-soporte" href="mailto:soporte@uy.netboxworld.com?subject=Consulta%20Régimen%20Simplificado&body=Hola,%20consulté%20mi%20cupo%20EPI%20(CI%3A%20${cedula})%20y%20me%20gustaría%20recibir%20asesoramiento%20sobre%20el%20régimen%20simplificado.">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Consultar con soporte
+        </a>
+      `;
     } else {
       card.classList.add('err');
       eyebrow.textContent = 'Respuesta inesperada';
-      text.textContent = 'El servicio de Aduana devolvió una respuesta no reconocida.';
+      title.textContent = 'El servicio de Aduana devolvió una respuesta no reconocida.';
+      sub.textContent = '';
     }
   } catch {
     card.style.display = 'block';
     card.classList.add('err');
     document.getElementById('resultEyebrow').textContent = 'Error de conexión';
-    document.getElementById('resultText').textContent = 'No se pudo conectar con el servicio. Verificá tu conexión e intentá nuevamente.';
+    document.getElementById('resultTitle').textContent = 'No se pudo conectar con el servicio.';
+    document.getElementById('resultSub').textContent = 'Verificá tu conexión e intentá nuevamente.';
   }
   btn.disabled = false;
   btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Consultar cupo`;
