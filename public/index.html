@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  :root{--b1:#1A3C8F;--b2:#2563EB;--b3:#3B82F6;--b4:#BFDBFE;--b5:#EFF6FF;--white:#FFFFFF;--gray:#F8FAFC;--text:#0F172A;--muted:#64748B;--border:#E2E8F0}
   body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F0F2F5;color:#0F172A;min-height:100vh}
   .nav{background:#fff;padding:0 48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:500;gap:16px;border-bottom:1px solid #E2E8F0;box-shadow:0 1px 8px rgba(0,0,0,.06);height:60px}
   .nav-brand{font-size:20px;font-weight:800;color:#0F172A;letter-spacing:-.5px;text-decoration:none}
@@ -15,73 +14,62 @@
   .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:.15s;text-decoration:none}
   .btn-primary{background:#2563EB;color:#fff}.btn-primary:hover{background:#1A3C8F}
   .btn-outline{background:transparent;color:#2563EB;border:1.5px solid #2563EB}.btn-outline:hover{background:#EFF6FF}
-  .page-wrap{max-width:640px;margin:0 auto;padding:48px 24px 80px}
+  .page-wrap{max-width:620px;margin:0 auto;padding:48px 24px 80px}
   .page-tag{display:inline-block;background:#EFF6FF;border:1.5px solid #BFDBFE;color:#2563EB;font-size:11px;font-weight:700;padding:5px 14px;border-radius:99px;margin-bottom:14px;letter-spacing:.08em;text-transform:uppercase}
   .page-title{font-size:36px;font-weight:800;color:#0F172A;letter-spacing:-1.5px;line-height:1.1;margin-bottom:10px}
   .page-title span{color:#2563EB}
-  .page-sub{font-size:15px;color:#64748B;line-height:1.7}
-  .page-header{margin-bottom:36px}
+  .page-sub{font-size:15px;color:#64748B;line-height:1.7;margin-bottom:32px}
   .card{background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.04);margin-bottom:16px}
   .card-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#64748B;margin-bottom:20px;display:flex;align-items:center;gap:8px}
   .card-label-icon{width:28px;height:28px;background:#EFF6FF;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .form-row{margin-bottom:18px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+  .form-row{margin-bottom:0}
   .form-label{display:block;font-size:13px;font-weight:600;color:#0F172A;margin-bottom:7px}
   .form-input{width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:15px;font-weight:500;color:#0F172A;background:#F8FAFC;font-family:'Plus Jakarta Sans',sans-serif;transition:.15s;outline:none}
   .form-input:focus{border-color:#2563EB;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
   .form-input::placeholder{color:#CBD5E1}
+  .form-input[readonly]{background:#F1F5F9;color:#64748B;cursor:default}
+  .form-input[readonly]:focus{border-color:#E2E8F0;box-shadow:none}
   .form-hint{font-size:12px;color:#94A3B8;margin-top:5px}
-  .btn-submit{width:100%;padding:14px;border-radius:12px;border:none;background:#2563EB;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+  .btn-submit{width:100%;padding:14px;border-radius:12px;border:none;background:#2563EB;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px}
   .btn-submit:hover{background:#1A3C8F}
   .btn-submit:disabled{background:#94A3B8;cursor:not-allowed}
   .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Loading state */
-  .loading-box{display:none;background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:28px;margin-bottom:16px;text-align:center}
-  .loading-steps{display:flex;flex-direction:column;gap:10px;margin-top:16px;text-align:left}
-  .loading-step{display:flex;align-items:center;gap:10px;font-size:13px;color:#64748B}
-  .loading-step.done{color:#16A34A}
-  .loading-step.active{color:#2563EB;font-weight:600}
-  .step-dot{width:8px;height:8px;border-radius:50%;background:#E2E8F0;flex-shrink:0}
-  .loading-step.done .step-dot{background:#16A34A}
-  .loading-step.active .step-dot{background:#2563EB;animation:pulse 1s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-
   /* Results */
-  .results-wrap{display:none;margin-bottom:16px}
-  .results-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-  .metric-card{background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-  .metric-card.ok{border-top:3px solid #16A34A}
-  .metric-card.warn{border-top:3px solid #F59E0B}
-  .metric-card.danger{border-top:3px solid #DC2626}
-  .metric-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94A3B8;margin-bottom:8px}
-  .metric-value{font-size:28px;font-weight:800;color:#0F172A;letter-spacing:-1px;line-height:1;margin-bottom:4px}
-  .metric-card.ok .metric-value{color:#16A34A}
-  .metric-card.warn .metric-value{color:#D97706}
-  .metric-card.danger .metric-value{color:#DC2626}
-  .metric-sub{font-size:12px;color:#94A3B8;margin-top:4px}
-  .metric-bar-wrap{margin-top:10px;background:#F1F5F9;border-radius:99px;height:6px;overflow:hidden}
-  .metric-bar{height:100%;border-radius:99px;transition:width .6s ease}
-  .metric-card.ok .metric-bar{background:#16A34A}
-  .metric-card.warn .metric-bar{background:#F59E0B}
-  .metric-card.danger .metric-bar{background:#DC2626}
+  .result-wrap{display:none;margin-bottom:16px}
+  .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .metric{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  .metric.ok{border-top:3px solid #16A34A}
+  .metric.warn{border-top:3px solid #F59E0B}
+  .metric.danger{border-top:3px solid #DC2626}
+  .metric-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94A3B8;margin-bottom:8px}
+  .metric-val{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:3px}
+  .metric.ok .metric-val{color:#16A34A}
+  .metric.warn .metric-val{color:#D97706}
+  .metric.danger .metric-val{color:#DC2626}
+  .metric-sub{font-size:11px;color:#94A3B8}
+  .metric-bar-wrap{margin-top:10px;background:#F1F5F9;border-radius:99px;height:5px;overflow:hidden}
+  .metric-bar{height:100%;border-radius:99px;transition:width .5s ease}
+  .metric.ok .metric-bar{background:#16A34A}
+  .metric.warn .metric-bar{background:#F59E0B}
+  .metric.danger .metric-bar{background:#DC2626}
 
-  /* Message card */
-  .msg-card{border-radius:16px;padding:22px;border:1px solid #E2E8F0}
-  .msg-card.ok{background:#F0FDF4;border-color:#86EFAC;border-left:4px solid #16A34A}
-  .msg-card.warn{background:#FFFBEB;border-color:#FCD34D;border-left:4px solid #F59E0B}
-  .msg-card.no{background:#FFF5F5;border-color:#FECACA;border-left:4px solid #DC2626}
-  .msg-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
-  .msg-card.ok .msg-eyebrow{color:#16A34A}
-  .msg-card.warn .msg-eyebrow{color:#D97706}
-  .msg-card.no .msg-eyebrow{color:#DC2626}
+  .msg{border-radius:14px;padding:20px;border:1px solid #E2E8F0}
+  .msg.ok{background:#F0FDF4;border-color:#86EFAC;border-left:4px solid #16A34A}
+  .msg.no{background:#FFF5F5;border-color:#FECACA;border-left:4px solid #DC2626}
+  .msg.err{background:#FFFBEB;border-color:#FCD34D;border-left:4px solid #D97706}
+  .msg-eye{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
+  .msg.ok .msg-eye{color:#16A34A}
+  .msg.no .msg-eye{color:#DC2626}
+  .msg.err .msg-eye{color:#D97706}
   .msg-title{font-size:16px;font-weight:800;color:#0F172A;margin-bottom:5px;line-height:1.3}
   .msg-sub{font-size:13px;color:#475569;line-height:1.6}
+  .msg-meta{font-size:12px;color:#94A3B8;margin-top:12px;padding-top:10px;border-top:1px solid rgba(0,0,0,.06);display:flex;gap:12px;flex-wrap:wrap}
   .btn-soporte{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:10px 18px;border-radius:10px;background:#0F172A;color:#fff;font-size:13px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:.15s}
   .btn-soporte:hover{background:#1A3C8F}
-  .result-meta{font-size:12px;color:#94A3B8;margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,.06);display:flex;gap:14px;flex-wrap:wrap}
 
-  /* Info box */
   .info-box{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:16px 20px;display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
   .info-text{font-size:13px;color:#1E40AF;line-height:1.6}
   .info-text strong{display:block;margin-bottom:2px;font-weight:700}
@@ -91,24 +79,16 @@
   .footer-brand span{color:#3B82F6}
   .footer-copy{font-size:12px;color:#475569}
 
-  /* Error */
-  .err-card{display:none;background:#FFFBEB;border:1px solid #FCD34D;border-left:4px solid #D97706;border-radius:16px;padding:22px;margin-bottom:16px}
-  .err-title{font-size:15px;font-weight:700;color:#92400E;margin-bottom:4px}
-  .err-sub{font-size:13px;color:#78350F}
-
-  @media(max-width:768px){
-    .nav{padding:0 16px;height:56px}
-    .nav-brand{font-size:16px}
+  @media(max-width:600px){
+    .nav{padding:0 16px;height:56px}.nav-brand{font-size:16px}
     .page-wrap{padding:28px 16px 60px}
     .page-title{font-size:26px;letter-spacing:-.5px}
-    .card{padding:20px}
-    .results-grid{grid-template-columns:1fr 1fr}
+    .card{padding:18px}
+    .form-grid{grid-template-columns:1fr}
+    .result-grid{grid-template-columns:1fr 1fr}
     .footer{padding:24px 16px;flex-direction:column;text-align:center}
-    .metric-value{font-size:22px}
   }
-  @media(max-width:400px){
-    .results-grid{grid-template-columns:1fr}
-  }
+  @media(max-width:380px){.result-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -122,12 +102,9 @@
 </nav>
 
 <div class="page-wrap">
-
-  <div class="page-header">
-    <div class="page-tag">Decreto 050/026</div>
-    <h1 class="page-title">Consulta de <span>Cupo EPI</span></h1>
-    <p class="page-sub">Verificá cuánto saldo y cuántos envíos te quedan disponibles en la franquicia de importaciones 2026, directamente desde el sistema de la Dirección Nacional de Aduanas.</p>
-  </div>
+  <div class="page-tag">Decreto 050/026</div>
+  <h1 class="page-title">Consulta de <span>Cupo EPI</span></h1>
+  <p class="page-sub">Verificá si tenés saldo disponible en tu franquicia de importaciones 2026 y cuántos envíos te quedan, directamente desde el sistema de la Dirección Nacional de Aduanas.</p>
 
   <div class="card">
     <div class="card-label">
@@ -136,11 +113,20 @@
       </div>
       Datos de consulta
     </div>
-    <div class="form-row">
-      <label class="form-label" for="cedula">Cédula de identidad</label>
-      <input class="form-input" type="text" id="cedula" placeholder="ej: 12345678" maxlength="12" inputmode="numeric" autocomplete="off">
-      <div class="form-hint">Sin puntos ni guiones</div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label class="form-label" for="cedula">Cédula de identidad</label>
+        <input class="form-input" type="text" id="cedula" placeholder="ej: 12345678" maxlength="12" inputmode="numeric" autocomplete="off">
+        <div class="form-hint">Sin puntos ni guiones</div>
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="monto">Monto a verificar (USD)</label>
+        <input class="form-input" type="number" id="monto" value="100" min="1" max="800" step="1" inputmode="numeric">
+        <div class="form-hint">Máximo USD 800 por año</div>
+      </div>
     </div>
+
     <input type="hidden" id="anio" value="2026">
     <button class="btn-submit" id="btnConsultar" onclick="consultar()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -148,52 +134,28 @@
     </button>
   </div>
 
-  <!-- Loading -->
-  <div class="loading-box" id="loadingBox">
-    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px">
-      <div class="spinner" style="border-top-color:#2563EB;border-color:#BFDBFE;border-top-color:#2563EB"></div>
-      <span style="font-size:14px;font-weight:600;color:#0F172A">Consultando Aduana...</span>
-    </div>
-    <p style="font-size:12px;color:#94A3B8;margin-bottom:16px">Esto puede tardar unos segundos</p>
-    <div class="loading-steps">
-      <div class="loading-step active" id="step1"><div class="step-dot"></div>Calculando saldo disponible en USD</div>
-      <div class="loading-step" id="step2"><div class="step-dot"></div>Consultando envíos utilizados</div>
-      <div class="loading-step" id="step3"><div class="step-dot"></div>Preparando resultados</div>
-    </div>
-  </div>
-
-  <!-- Error -->
-  <div class="err-card" id="errCard">
-    <div class="err-title" id="errTitle"></div>
-    <div class="err-sub" id="errSub"></div>
-  </div>
-
-  <!-- Results -->
-  <div class="results-wrap" id="resultsWrap">
-
-    <div class="results-grid">
-      <div class="metric-card" id="saldoCard">
-        <div class="metric-eyebrow">Saldo disponible</div>
-        <div class="metric-value" id="saldoValue">—</div>
-        <div class="metric-sub" id="saldoSub"></div>
-        <div class="metric-bar-wrap"><div class="metric-bar" id="saldoBar" style="width:0%"></div></div>
+  <div class="result-wrap" id="resultWrap">
+    <div class="result-grid">
+      <div class="metric" id="cupoCard">
+        <div class="metric-label">Cupo para monto</div>
+        <div class="metric-val" id="cupoVal">—</div>
+        <div class="metric-sub" id="cupoSub"></div>
+        <div class="metric-bar-wrap"><div class="metric-bar" id="cupoBar" style="width:0%"></div></div>
       </div>
-      <div class="metric-card" id="enviosCard">
-        <div class="metric-eyebrow">Envíos restantes</div>
-        <div class="metric-value" id="enviosValue">—</div>
+      <div class="metric" id="enviosCard">
+        <div class="metric-label">Envíos restantes</div>
+        <div class="metric-val" id="enviosVal">—</div>
         <div class="metric-sub" id="enviosSub"></div>
         <div class="metric-bar-wrap"><div class="metric-bar" id="enviosBar" style="width:0%"></div></div>
       </div>
     </div>
-
-    <div class="msg-card" id="msgCard">
-      <div class="msg-eyebrow" id="msgEyebrow"></div>
+    <div class="msg" id="msgCard">
+      <div class="msg-eye" id="msgEye"></div>
       <div class="msg-title" id="msgTitle"></div>
       <div class="msg-sub" id="msgSub"></div>
       <div id="msgBtn"></div>
-      <div class="result-meta" id="resultMeta"></div>
+      <div class="msg-meta" id="msgMeta"></div>
     </div>
-
   </div>
 
   <div class="info-box">
@@ -205,7 +167,6 @@
   </div>
 
   <div class="legal">* Información basada en datos registrados por la Dirección Nacional de Aduanas en Uruguay.</div>
-
 </div>
 
 <footer class="footer">
@@ -216,115 +177,93 @@
 <script>
 async function consultar() {
   const cedula = document.getElementById('cedula').value.trim();
+  const monto  = document.getElementById('monto').value;
   const anio   = document.getElementById('anio').value;
   if (!cedula) { alert('Ingresá una cédula de identidad.'); return; }
+  if (!monto)  { alert('Ingresá un monto a verificar.'); return; }
 
-  // Reset UI
   const btn = document.getElementById('btnConsultar');
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> Consultando...';
-  document.getElementById('loadingBox').style.display = 'block';
-  document.getElementById('resultsWrap').style.display = 'none';
-  document.getElementById('errCard').style.display = 'none';
-  setStep(1);
+  document.getElementById('resultWrap').style.display = 'none';
 
   try {
-    // Simular progreso visual
-    setTimeout(() => setStep(2), 3000);
-    setTimeout(() => setStep(3), 6000);
-
     const resp = await fetch('/api/cupo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ documento: cedula, anio: parseInt(anio) })
+      body: JSON.stringify({ documento: cedula, anio: parseInt(anio), monto: parseFloat(monto) })
     });
     const data = await resp.json();
 
-    document.getElementById('loadingBox').style.display = 'none';
-
     if (resp.status >= 400 || data.error) {
-      showError('No se pudo completar la consulta', data.error || data.detalle || 'Intentá nuevamente en unos momentos.');
-      return;
+      alert('Error: ' + (data.error || data.detalle || 'Intentá nuevamente.'));
+    } else {
+      mostrarResultados(data, cedula, monto, anio);
     }
-
-    mostrarResultados(data, cedula, anio);
-
-  } catch (e) {
-    document.getElementById('loadingBox').style.display = 'none';
-    showError('Error de conexión', 'No se pudo conectar con el servicio. Verificá tu conexión e intentá nuevamente.');
+  } catch(e) {
+    alert('No se pudo conectar con el servicio. Verificá tu conexión e intentá nuevamente.');
   }
 
   btn.disabled = false;
   btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Consultar franquicia 2026`;
 }
 
-function setStep(n) {
-  for (let i = 1; i <= 3; i++) {
-    const el = document.getElementById('step' + i);
-    el.className = 'loading-step' + (i < n ? ' done' : i === n ? ' active' : '');
-  }
-}
+function mostrarResultados(data, cedula, monto, anio) {
+  const { tieneCupo, enviosRestantes, enviosUsados, enviosPorAnio } = data;
+  const tieneC = tieneCupo === 'S';
 
-function mostrarResultados(data, cedula, anio) {
-  const { saldoRestante, enviosRestantes, enviosUsados, enviosPorAnio } = data;
-
-  // Saldo card
-  const saldoPct = Math.round((saldoRestante / 800) * 100);
-  const saldoCard = document.getElementById('saldoCard');
-  saldoCard.className = 'metric-card ' + (saldoRestante > 200 ? 'ok' : saldoRestante > 0 ? 'warn' : 'danger');
-  document.getElementById('saldoValue').textContent = 'USD ' + saldoRestante;
-  document.getElementById('saldoSub').textContent = 'de USD 800 anuales';
-  setTimeout(() => { document.getElementById('saldoBar').style.width = saldoPct + '%'; }, 100);
+  // Cupo card
+  const cc = document.getElementById('cupoCard');
+  cc.className = 'metric ' + (tieneC ? 'ok' : 'danger');
+  document.getElementById('cupoVal').textContent = tieneC ? 'Sí' : 'No';
+  document.getElementById('cupoSub').textContent = 'para USD ' + parseFloat(monto).toLocaleString('es-UY');
+  setTimeout(() => { document.getElementById('cupoBar').style.width = tieneC ? '100%' : '0%'; }, 100);
 
   // Envíos card
-  const enviosPct = Math.round((enviosRestantes / enviosPorAnio) * 100);
-  const enviosCard = document.getElementById('enviosCard');
-  enviosCard.className = 'metric-card ' + (enviosRestantes >= 2 ? 'ok' : enviosRestantes === 1 ? 'warn' : 'danger');
-  document.getElementById('enviosValue').textContent = enviosRestantes + ' de ' + enviosPorAnio;
+  const ec = document.getElementById('enviosCard');
+  ec.className = 'metric ' + (enviosRestantes >= 2 ? 'ok' : enviosRestantes === 1 ? 'warn' : 'danger');
+  document.getElementById('enviosVal').textContent = enviosRestantes + ' de ' + enviosPorAnio;
   document.getElementById('enviosSub').textContent = enviosUsados + ' envío' + (enviosUsados !== 1 ? 's' : '') + ' utilizado' + (enviosUsados !== 1 ? 's' : '');
-  setTimeout(() => { document.getElementById('enviosBar').style.width = enviosPct + '%'; }, 100);
+  const pct = Math.round((enviosRestantes / enviosPorAnio) * 100);
+  setTimeout(() => { document.getElementById('enviosBar').style.width = pct + '%'; }, 100);
 
-  // Mensaje principal
-  const msgCard  = document.getElementById('msgCard');
-  const eyebrow  = document.getElementById('msgEyebrow');
-  const title    = document.getElementById('msgTitle');
-  const sub      = document.getElementById('msgSub');
-  const msgBtn   = document.getElementById('msgBtn');
-  msgBtn.innerHTML = '';
+  // Mensaje
+  const mc  = document.getElementById('msgCard');
+  const eye = document.getElementById('msgEye');
+  const tit = document.getElementById('msgTitle');
+  const sub = document.getElementById('msgSub');
+  const btn = document.getElementById('msgBtn');
+  btn.innerHTML = '';
 
-  const puedeEnviar = saldoRestante > 0 && enviosRestantes > 0;
+  const puedeEnviar = tieneC && enviosRestantes > 0;
 
   if (puedeEnviar) {
-    msgCard.className = 'msg-card ok';
-    eyebrow.textContent = '✓ Franquicia disponible';
-    title.textContent = '¡Felicitaciones! Tenés cupo disponible para tu próxima importación.';
-    sub.textContent = `Te quedan USD ${saldoRestante} de saldo y ${enviosRestantes} envío${enviosRestantes !== 1 ? 's' : ''} disponible${enviosRestantes !== 1 ? 's' : ''} este año.`;
-  } else if (saldoRestante === 0 && enviosRestantes === 0) {
-    msgCard.className = 'msg-card no';
-    eyebrow.textContent = '✗ Sin cupo disponible';
-    title.textContent = 'No te queda cupo de franquicia para el año 2026.';
+    mc.className = 'msg ok';
+    eye.textContent = '✓ Franquicia disponible';
+    tit.textContent = '¡Felicitaciones! Tenés cupo disponible para tu próxima importación.';
+    sub.textContent = `Contás con saldo para USD ${parseFloat(monto).toLocaleString('es-UY')} y te quedan ${enviosRestantes} envío${enviosRestantes !== 1 ? 's' : ''} disponible${enviosRestantes !== 1 ? 's' : ''} este año.`;
+  } else if (!tieneC && enviosRestantes === 0) {
+    mc.className = 'msg no';
+    eye.textContent = '✗ Sin cupo disponible';
+    tit.textContent = 'No te queda cupo de franquicia para el año 2026.';
     sub.textContent = 'De igual forma podés optar por envío bajo régimen simplificado y comprar en el mundo las veces que quieras, abonando el 60% del monto de la factura.';
-    msgBtn.innerHTML = btnSoporte(cedula);
-  } else if (saldoRestante === 0) {
-    msgCard.className = 'msg-card no';
-    eyebrow.textContent = '✗ Saldo USD agotado';
-    title.textContent = 'Agotaste los USD 800 de franquicia para el año 2026.';
-    sub.textContent = 'Podés optar por envío bajo régimen simplificado abonando el 60% del monto de la factura.';
-    msgBtn.innerHTML = btnSoporte(cedula);
+    btn.innerHTML = btnSoporte(cedula);
+  } else if (!tieneC) {
+    mc.className = 'msg no';
+    eye.textContent = '✗ Sin saldo para ese monto';
+    tit.textContent = 'No contás con cupo suficiente para el monto ingresado en el año 2026.';
+    sub.textContent = 'De igual forma podés optar por envío bajo régimen simplificado y comprar en el mundo las veces que quieras, abonando el 60% del monto de la factura.';
+    btn.innerHTML = btnSoporte(cedula);
   } else {
-    msgCard.className = 'msg-card no';
-    eyebrow.textContent = '✗ Envíos agotados';
-    title.textContent = 'Utilizaste los 3 envíos franquiciados del año 2026.';
-    sub.textContent = `Aunque te quedan USD ${saldoRestante} de saldo, ya no podés usar más franquicias este año. Podés optar por régimen simplificado abonando el 60% del monto de la factura.`;
-    msgBtn.innerHTML = btnSoporte(cedula);
+    mc.className = 'msg no';
+    eye.textContent = '✗ Envíos agotados';
+    tit.textContent = 'Utilizaste los 3 envíos franquiciados del año 2026.';
+    sub.textContent = 'Podés optar por régimen simplificado abonando el 60% del monto de la factura.';
+    btn.innerHTML = btnSoporte(cedula);
   }
 
-  document.getElementById('resultMeta').innerHTML = `
-    <span>📅 Año ${anio}</span>
-    <span>🪪 CI: ${cedula}</span>
-  `;
-
-  document.getElementById('resultsWrap').style.display = 'block';
+  document.getElementById('msgMeta').innerHTML = `<span>📅 ${anio}</span><span>💵 USD ${parseFloat(monto).toLocaleString('es-UY')}</span><span>🪪 CI: ${cedula}</span>`;
+  document.getElementById('resultWrap').style.display = 'block';
 }
 
 function btnSoporte(cedula) {
@@ -332,12 +271,6 @@ function btnSoporte(cedula) {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
     Consultar con soporte
   </a>`;
-}
-
-function showError(title, sub) {
-  document.getElementById('errTitle').textContent = title;
-  document.getElementById('errSub').textContent   = sub;
-  document.getElementById('errCard').style.display = 'block';
 }
 </script>
 </body>
