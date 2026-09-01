@@ -4,9 +4,6 @@ const CUPO_EPI_ENDPOINT = 'https://servicios.aduanas.gub.uy/LuciaWS/awscupoepi.a
 const CNT_ENDPOINT      = 'https://servicios.aduanas.gub.uy/luciaws/aWSCntEncomiendasPostales.aspx';
 const ENVIOS_POR_ANIO   = parseInt(process.env.ADUANAS_YEARLY_EXCEMPTIONS || '3');
 
-// Puntos fijos a consultar en paralelo (precision de 100 USD)
-const MONTOS = [800, 700, 600, 500, 400, 300, 200, 100, 1];
-
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -16,22 +13,17 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, body: JSON.stringify({ error: 'Body inválido' }) }; }
 
-  const { documento, anio } = body;
-  if (!documento || !anio) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Faltan campos: documento, anio' }) };
+  const { documento, anio, monto } = body;
+  if (!documento || !anio || monto === undefined) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Faltan campos: documento, anio, monto' }) };
   }
 
   try {
-    // Todas las consultas en paralelo simultaneamente
-    const [resultadosCupo, enviosResult] = await Promise.all([
-      consultarMontos(documento, anio),
+    // Dos llamadas en paralelo — rapido y sin rate limiting
+    const [cupoResult, enviosResult] = await Promise.all([
+      consultarCupo(documento, anio, monto),
       consultarEnvios(documento, anio)
     ]);
-
-    // Encontrar el mayor monto con cupo disponible
-    const saldoRestante = resultadosCupo.reduce((max, r) => {
-      return (r.tieneCupo && r.monto > max) ? r.monto : max;
-    }, 0);
 
     const enviosUsados    = enviosResult.cantEncomiendas;
     const enviosRestantes = Math.max(ENVIOS_POR_ANIO - enviosUsados, 0);
@@ -40,11 +32,12 @@ exports.handler = async (event) => {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        saldoRestante,
+        tieneCupo:      cupoResult.tieneCupo,
+        errorCupo:      cupoResult.error,
+        erroresCupo:    cupoResult.errores,
         enviosUsados,
         enviosRestantes,
-        enviosPorAnio: ENVIOS_POR_ANIO,
-        errorEnvios: enviosResult.error || null
+        enviosPorAnio:  ENVIOS_POR_ANIO,
       }),
     };
   } catch (err) {
@@ -56,21 +49,7 @@ exports.handler = async (event) => {
   }
 };
 
-// Consulta todos los montos en paralelo
-async function consultarMontos(documento, anio) {
-  return Promise.all(
-    MONTOS.map(async (monto) => {
-      try {
-        const tieneCupo = await checkCupo(documento, anio, monto);
-        return { monto, tieneCupo };
-      } catch {
-        return { monto, tieneCupo: false };
-      }
-    })
-  );
-}
-
-async function checkCupo(documento, anio, monto) {
+async function consultarCupo(documento, anio, monto) {
   const soap = `<?xml version="1.0" encoding="utf-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                   xmlns:wsc="www.aduanas.gub.uy/WSCupoEPI">
@@ -83,9 +62,11 @@ async function checkCupo(documento, anio, monto) {
     </wsc:WSCupoEPI.Execute>
   </soapenv:Body>
 </soapenv:Envelope>`;
-  const xml = await soapRequest(CUPO_EPI_ENDPOINT, soap);
+  const xml     = await soapRequest(CUPO_EPI_ENDPOINT, soap);
   const tieneCupo = extractTag(xml, 'Tienecupo');
-  return tieneCupo === 'S';
+  const error     = extractTag(xml, 'Error');
+  const errores   = extractTag(xml, 'Errores');
+  return { tieneCupo, error, errores };
 }
 
 async function consultarEnvios(documento, anio) {
@@ -100,7 +81,7 @@ async function consultarEnvios(documento, anio) {
     </wsdlns:WSCntEncomiendasPostales.Execute>
   </s11:Body>
 </s11:Envelope>`;
-  const xml = await soapRequest(CNT_ENDPOINT, soap);
+  const xml     = await soapRequest(CNT_ENDPOINT, soap);
   const cant    = extractTag(xml, 'Cantencomiendas');
   const errores = extractTag(xml, 'Errores');
   if (cant !== null) return { cantEncomiendas: parseInt(cant) || 0, error: null };
