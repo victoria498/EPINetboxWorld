@@ -2,8 +2,10 @@ const https = require('https');
 
 const CUPO_EPI_ENDPOINT = 'https://servicios.aduanas.gub.uy/LuciaWS/awscupoepi.aspx';
 const CNT_ENDPOINT      = 'https://servicios.aduanas.gub.uy/luciaws/aWSCntEncomiendasPostales.aspx';
-const MAX_FRANQUICIA    = 800;
 const ENVIOS_POR_ANIO   = parseInt(process.env.ADUANAS_YEARLY_EXCEMPTIONS || '3');
+
+// Puntos fijos a consultar en paralelo (precision de 100 USD)
+const MONTOS = [800, 700, 600, 500, 400, 300, 200, 100, 1];
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -20,11 +22,16 @@ exports.handler = async (event) => {
   }
 
   try {
-    // Ambas consultas en paralelo
-    const [saldoRestante, enviosResult] = await Promise.all([
-      buscarSaldoBinario(documento, anio),
+    // Todas las consultas en paralelo simultaneamente
+    const [resultadosCupo, enviosResult] = await Promise.all([
+      consultarMontos(documento, anio),
       consultarEnvios(documento, anio)
     ]);
+
+    // Encontrar el mayor monto con cupo disponible
+    const saldoRestante = resultadosCupo.reduce((max, r) => {
+      return (r.tieneCupo && r.monto > max) ? r.monto : max;
+    }, 0);
 
     const enviosUsados    = enviosResult.cantEncomiendas;
     const enviosRestantes = Math.max(ENVIOS_POR_ANIO - enviosUsados, 0);
@@ -49,24 +56,18 @@ exports.handler = async (event) => {
   }
 };
 
-// Busqueda binaria: encuentra el maximo monto con cupo disponible
-async function buscarSaldoBinario(documento, anio) {
-  // Primero verificar si tiene algun cupo
-  const tieneAlgo = await checkCupo(documento, anio, 1);
-  if (!tieneAlgo) return 0;
-
-  // Ver si tiene el cupo completo
-  const tieneTodo = await checkCupo(documento, anio, MAX_FRANQUICIA);
-  if (tieneTodo) return MAX_FRANQUICIA;
-
-  // Busqueda binaria entre 1 y MAX_FRANQUICIA
-  let lo = 1, hi = MAX_FRANQUICIA;
-  while (lo < hi - 1) {
-    const mid = Math.floor((lo + hi) / 2);
-    const tiene = await checkCupo(documento, anio, mid);
-    if (tiene) { lo = mid; } else { hi = mid; }
-  }
-  return lo;
+// Consulta todos los montos en paralelo
+async function consultarMontos(documento, anio) {
+  return Promise.all(
+    MONTOS.map(async (monto) => {
+      try {
+        const tieneCupo = await checkCupo(documento, anio, monto);
+        return { monto, tieneCupo };
+      } catch {
+        return { monto, tieneCupo: false };
+      }
+    })
+  );
 }
 
 async function checkCupo(documento, anio, monto) {
@@ -100,7 +101,7 @@ async function consultarEnvios(documento, anio) {
   </s11:Body>
 </s11:Envelope>`;
   const xml = await soapRequest(CNT_ENDPOINT, soap);
-  const cant   = extractTag(xml, 'Cantencomiendas');
+  const cant    = extractTag(xml, 'Cantencomiendas');
   const errores = extractTag(xml, 'Errores');
   if (cant !== null) return { cantEncomiendas: parseInt(cant) || 0, error: null };
   return { cantEncomiendas: 0, error: errores };
@@ -129,7 +130,7 @@ function soapRequest(url, soap) {
       res.on('end', () => resolve(data));
     });
     req.on('error', reject);
-    req.setTimeout(30000, () => { req.destroy(); reject(new Error('Timeout')); });
+    req.setTimeout(8000, () => { req.destroy(); reject(new Error('Timeout')); });
     req.write(soap);
     req.end();
   });
